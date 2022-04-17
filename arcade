@@ -1,0 +1,736 @@
+from tkinter import *
+import tkinter.font as font
+import threading
+from time import *
+from tkinter import messagebox as mb
+from matplotlib import pyplot as plt
+from matplotlib.figure import Figure 
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,NavigationToolbar2Tk)
+import random
+import mysql.connector
+my = mysql.connector.connect(host="localhost",database="compproject",user="root",password="meg")
+cursor = my.cursor()
+count=[]
+lib=""
+l=[]
+point=0
+check=0
+def clearFrame():
+    # destroy all widgets from frame
+    for widget in window_frame3.winfo_children():
+       widget.destroy()
+       
+def test1():
+    clearFrame()
+    global lib
+    global q_i
+    global countdown_thread
+    countdown_thread = threading.Thread(target = timer)
+    countdown_thread.start()
+    lib="libQ1"
+    tt()
+    if q_i==16:
+        return
+   
+def test2():
+    clearFrame()
+    global lib
+    global q_i
+    global countdown_thread
+    countdown_thread = threading.Thread(target = timer)
+    countdown_thread.start()
+    lib="libQ2"
+    tt()
+    if q_i==16:
+        return
+    
+def test3():
+    clearFrame()
+    global lib
+    global q_i
+    global countdown_thread
+    countdown_thread = threading.Thread(target = timer)
+    countdown_thread.start()
+    lib="libQ3"
+    tt()
+    if q_i==16:
+        return
+    
+def test4():
+    clearFrame()
+    global lib
+    global q_i
+    global countdown_thread
+    countdown_thread = threading.Thread(target = timer)
+    countdown_thread.start()
+    lib="libQ4"
+    tt()
+    if q_i==16:
+        return
+   
+def submit():
+    global check
+    global my_timer
+    window_frame3.grid_remove()
+    if my_timer !=0:
+        check=1
+        score()
+        my_timer=0
+        return
+        
+def timer():
+    global check
+    global my_timer
+    my_timer = 120 #time for the test
+    for i in range(120):
+        my_timer = my_timer - 1
+        sleep(1)
+        print(my_timer)#checking
+        if my_timer==0:
+            if check==0:#checking if submit has not been clicked
+                score()
+                return
+            print("Time done")
+            return
+        elif my_timer<10:
+            mytime="00:0"+str(my_timer)
+        elif my_timer>=10 and my_timer<60:
+            mytime="00:"+str(my_timer)
+        else:
+            p,q=divmod(my_timer,60)
+            if q<10:
+                mytime=str(p)+":0"+str(q)
+            else:
+                mytime=str(p)+":"+str(q)
+        #Creation of time label
+        time_label= Label(window_frame3, text=mytime, bg = 'lightcoral', fg = 'black')
+        time_label.grid(row = 1, column = 3, columnspan = 1, padx = 50, pady = 0, ipadx = 50, ipady = 0)
+        time_label['font'] = myFont2
+
+
+def next1():
+    global q_i
+    q_i = q_i + 1
+    if q_i ==16:
+        clearFrame()
+        submit()
+        return
+    else:
+        clearFrame()
+        tt()
+
+def score():
+    
+    n="Student_Score"+name
+    cursor.execute("CREATE TABLE IF NOT EXISTS {}(Student_Name varchar(50),Test1 int,Test2 int,Test3 int,Test4 int)".format(n))
+    cursor.execute("SELECT * FROM Student_Scoremeg")
+    a=cursor.fetchall()
+    if lib=="libQ1":
+        if a==[]:
+            cursor.execute("INSERT INTO {} VALUES('{}',{},0,0,0)".format(n,name,point))
+        else:
+            cursor.execute("UPDATE {} SET Test1={}".format(n,point))
+    elif lib=="libQ2":
+        if a==[]:
+            cursor.execute("INSERT INTO {} VALUES('{}',0,{},0,0)".format(n,name,point))
+        else:
+            cursor.execute("UPDATE {} SET Test2={}".format(n,point))
+    elif lib=="libQ3":
+        if a==[]:
+            cursor.execute("INSERT INTO {} VALUES('{}',0,0,{},0)".format(n,name,point))
+        else:
+            cursor.execute("UPDATE {} SET Test3={}".format(n,point))
+    elif lib=="libQ4":
+        if a==[]:
+            cursor.execute("INSERT INTO {} VALUES('{}',0,0,0,{})".format(n,name,point))
+        else:
+            cursor.execute("UPDATE {} SET Test4={}".format(n,point))
+    my.commit()
+    cursor.execute("SELECT * FROM {}".format(n))
+    for i in cursor.fetchall():
+        print(i)
+def tt():
+    global lib
+    global q_i
+    global l
+    global point
+    global count
+    cursor.execute("select count(*) from {}".format(lib))
+    #for i in cursor:
+     #   count=int(i[0])
+    for i in range(5):
+        n=random.randint(1,15)
+        if n not in count:
+            count.append(n)
+    for i in count:
+        cursor.execute("select * from {} where Sno={}".format(lib,i))
+        a=list(cursor.fetchall())
+        l.append(a)
+        q=l[q_i-1][0][1]
+        op1=l[q_i-1][0][2]
+        op2=l[q_i-1][0][3]
+        op3=l[q_i-1][0][4]
+        op4=l[q_i-1][0][5]
+        correct=l[q_i-2][0][6]
+        
+        q1_label= Label(window_frame3, text=q, bg = 'lightcoral', fg = 'Black')
+        q1_label.grid(row = 1, column = 1, columnspan = 1, padx = 50, pady = 0, ipadx = 50, ipady = 0)
+        q1_label['font'] = myFont2
+
+        R1 = Radiobutton(window_frame3, text = op1, variable = RVar1,value=1, bg = 'lightcoral', fg = 'black',activebackground='dimgrey')
+        R1.grid(row = 4, column = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 50, ipady = 0)
+        R1['font']=myFont3
+
+        R2 = Radiobutton(window_frame3, text = op2, variable = RVar1 ,value=2, bg = 'lightcoral', fg = 'black',activebackground='dimgrey')
+        R2.grid(row = 5, column = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 50, ipady = 0)
+        R2['font']=myFont3
+
+        R3 = Radiobutton(window_frame3, text = op3, variable = RVar1, value=3, bg = 'lightcoral', fg = 'black',activebackground='dimgrey')
+        R3.grid(row = 6, column = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 50, ipady = 0)
+        R3['font']=myFont3
+
+        R4 = Radiobutton(window_frame3, text = op4, variable = RVar1, value=4, bg = 'lightcoral', fg = 'black',activebackground='dimgrey')
+        R4.grid(row = 7, column = 1, columnspan = 1, padx = 0, pady = 0, ipadx = 50, ipady = 0)
+        R4['font']=myFont3
+
+        if my_timer==0 :
+            mb.showwarning("You cannot proceed :((","TIME UP!")
+            window_frame3.grid_remove()
+            break
+        
+        if RVar1.get()==1:
+            print(l[q_i-2][0][2],"and ",correct)
+            if l[q_i-2][0][2]==correct:
+                point=point+1
+
+        elif RVar1.get()==2:
+            print(l[q_i-2][0][3],"and ",correct)
+            if l[q_i-2][0][3]==correct:
+                point=point+1
+                
+        elif RVar1.get()==3:
+            print(l[q_i-2][0][4],"and ",correct)
+            if l[q_i-2][0][4]==correct:
+                point=point+1
+
+        elif RVar1.get()==4:
+            print(l[q_i-2][0][5],"and ",correct)
+            if l[q_i-2][0][5]==correct:
+                point=point+1
+                
+        print("point : ",point)
+        
+        button_next = Button( window_frame3, text = 'Next',fg = 'lightcoral', bg = 'Black', borderwidth = 5,command=next1)
+        button_next.grid( row = 11, column = 2, columnspan = 1, padx = 50, pady = 0, ipadx = 25, ipady = 0)
+        button_next['font'] = myFont2
+        
+        button_Submit = Button( window_frame3, text = 'Submit', fg = 'lightcoral', bg = 'Black', borderwidth = 5, command = submit)
+        button_Submit.grid( row = 11, column = 3, columnspan = 1, padx = 50, pady = 0, ipadx = 25, ipady = 0)
+        button_Submit['font'] = myFont2
+
+        break
+
+def test():
+    
+    window_frame4.grid_remove()
+    #Creation of label-instructions
+    Label_instruction=Label(window_frame3,text="INSTRUCTIONS \n1.You have 15 minutes to complete this test. \n2.You cannot go back to a question once you click Next \nGood Luck!",bg = 'lightcoral', fg = 'Black')
+    Label_instruction.grid(row = 1, column = 1, columnspan = 1, padx = 50, pady = 0, ipadx = 50, ipady = 0)
+    Label_instruction['font'] = myFont3
+
+    #Creation of test button
+    button_Test1 = Button( window_frame3, text = 'MYSQL Test', fg = 'lightcoral', bg = 'Black', borderwidth = 5, command = test1)
+    button_Test1.grid( row = 3, column = 1, columnspan = 1, padx = 50, pady = 30, ipadx = 50, ipady = 0)
+    button_Test1['font'] = myFont3
+
+    button_Test2 = Button( window_frame3, text = 'Computer network Test', fg = 'lightcoral', bg = 'Black', borderwidth = 5, command = test2)
+    button_Test2.grid( row = 5, column = 1, columnspan = 1, padx = 50, pady = 30, ipadx = 50, ipady = 0)
+    button_Test2['font'] = myFont3
+
+    button_Test3 = Button( window_frame3, text = 'Society,law & Ethics Test', fg = 'lightcoral', bg = 'Black', borderwidth = 5, command = test3)
+    button_Test3.grid( row = 7, column = 1, columnspan = 1, padx = 50, pady = 20, ipadx = 50, ipady = 0)
+    button_Test3['font'] = myFont3
+
+    button_Test4 = Button( window_frame3, text = 'Python Libraries Test', fg = 'lightcoral', bg = 'Black', borderwidth = 5, command = test4)
+    button_Test4.grid( row = 9, column = 1, columnspan = 1, padx = 50, pady = 20, ipadx = 50, ipady = 0)
+    button_Test4['font'] = myFont3
+
+
+def result():
+    window_frame4.grid_remove()
+    
+    Label_result=Label(window_frame5,text="Results:", bg='lightcoral',fg = 'Black')
+    Label_result.grid(row = 1, column = 1, columnspan = 1, padx = 50, pady = 0, ipadx = 50, ipady = 0)
+    Label_result['font'] = myFont3
+
+    fig = Figure(figsize = (5, 5),dpi = 80) 
+    y = [i**2 for i in range(60)]  
+    plot1 = fig.add_subplot(111)
+    plot1.set_ylabel("Marks")
+    plot1.plot(n,m,ls="solid",markeredgecolor='r') 
+    canvas = FigureCanvasTkAgg(fig,master = window_frame5)   
+    canvas.draw() 
+    canvas.get_tk_widget().grid(row=2,column=1) 
+    
+    Label_test1=Label(window_frame5,text="MYSQL Test:"+str(a[0][1]), fg = 'Black',bg='lightcoral')
+    Label_test1.grid(row = 4, column = 1, columnspan = 1, padx = 50, pady = 0, ipadx = 50, ipady = 0)
+    Label_test1['font'] = myFont3
+    
+    Label_test2=Label(window_frame5,text="Computer Network Test:"+str(a[0][2]), fg = 'Black',bg='lightcoral')
+    Label_test2.grid(row = 5, column = 1, columnspan = 1, padx = 50, pady = 0, ipadx = 50, ipady = 0)
+    Label_test2['font'] = myFont3
+    
+    Label_test3=Label(window_frame5,text="Society,Laws & Ethics Test :"+str(a[0][3]), fg = 'Black',bg='lightcoral')
+    Label_test3.grid(row = 6, column = 1, columnspan = 1, padx = 50, pady = 0, ipadx = 50, ipady = 0)
+    Label_test3['font'] = myFont3
+    
+    Label_test4=Label(window_frame5,text="Python Libraries Test :"+str(a[0][4]), fg = 'Black',bg='lightcoral')
+    Label_test4.grid(row = 7, column = 1, columnspan = 1, padx = 50, pady = 0, ipadx = 50, ipady = 0)
+    Label_test4['font'] = myFont3
+    
+   
+
+
+#placing sign in widgets
+def sign_in():
+    if checker == 0:
+        global signin_clicked
+        signin_clicked=True
+        if register_clicked:
+            FirstName_label.grid_remove()
+            FirstName_entrybox.grid_remove()
+
+            LastName_label.grid_remove()
+            LastName_entrybox.grid_remove()
+
+            EmailID_label.grid_remove()
+            EmailID_entrybox.grid_remove()
+
+            Phonenumber_label.grid_remove()
+            Phonenumber_entrybox.grid_remove()
+
+            UsernameR_label.grid_remove()
+            UsernameR_entrybox.grid_remove()
+
+            DOB_label.grid_remove()
+            DOB_entrybox.grid_remove()
+
+            PasswordR_label.grid_remove()
+            PasswordR_entrybox.grid_remove()
+            Re_enterPassword_label.grid_remove()
+            Re_enterPassword_entrybox.grid_remove()
+
+            SUBMIT2.grid_remove()
+        #the entry boxes and labels
+        
+        UsernameS_label['font'] = myFont2
+        UsernameS_entrybox['font'] = myFont2
+
+        Password_label['font'] = myFont2
+        Password_entrybox['font'] = myFont2
+
+        SUBMIT['font'] = myFont2
+        #gridding
+        UsernameS_label.grid( row = 3, column = 2, columnspan = 2)
+        UsernameS_entrybox.grid( row = 3, column = 4, columnspan = 2)
+
+        Password_label.grid( row = 5, column = 2, columnspan = 2)
+        Password_entrybox.grid( row = 5, column = 4, columnspan = 2)
+
+        SUBMIT.grid( row = 7, column = 5, columnspan = 2)
+    else:
+        pass
+
+#
+#Placing the register widgets
+#
+def button_register():
+    if checker == 0:
+        global register_clicked
+        register_clicked=True
+        if signin_clicked:
+            UsernameS_label.grid_remove()
+            UsernameS_entrybox.grid_remove()
+
+            Password_label.grid_remove()
+            Password_entrybox.grid_remove()
+
+            SUBMIT.grid_forget()
+        FirstName_label['font'] = myFont3
+        FirstName_entrybox['font'] = myFont3
+
+        LastName_label['font'] = myFont3
+        LastName_entrybox['font'] = myFont3
+
+        EmailID_label['font'] = myFont3
+        EmailID_entrybox['font'] = myFont3
+
+        Phonenumber_label['font'] = myFont3
+        Phonenumber_entrybox['font'] = myFont3
+
+        UsernameR_label['font'] = myFont3   #if username has been taken add message box 
+        UsernameR_entrybox['font'] = myFont3
+
+        DOB_label['font'] = myFont3
+        DOB_entrybox['font'] = myFont3
+
+        PasswordR_label['font'] = myFont3
+        PasswordR_entrybox['font'] = myFont3
+        Re_enterPassword_label['font'] = myFont3
+        Re_enterPassword_entrybox['font'] = myFont3
+
+        SUBMIT2['font'] = myFont2
+
+        FirstName_label.grid( row = 3, column = 2, columnspan = 1)
+        FirstName_entrybox.grid( row = 3, column = 3, columnspan = 1)
+
+        LastName_label.grid( row = 3, column = 4, columnspan = 1)
+        LastName_entrybox.grid( row = 3, column = 5, columnspan = 1)
+
+        EmailID_label.grid( row = 4, column = 2, columnspan = 1)
+        EmailID_entrybox.grid( row = 4, column = 3, columnspan = 1)
+
+        Phonenumber_label.grid( row = 4, column = 4, columnspan = 1)
+        Phonenumber_entrybox.grid( row = 4, column = 5, columnspan = 1)
+
+        UsernameR_label.grid( row = 5, column = 2, columnspan = 1)
+        UsernameR_entrybox.grid( row = 5, column = 3, columnspan = 1)
+
+        DOB_label.grid( row = 5, column = 4, columnspan = 1)
+        DOB_entrybox.grid( row = 5, column = 5, columnspan = 1)
+
+        PasswordR_label.grid( row = 7, column = 3, columnspan = 1)
+        PasswordR_entrybox.grid( row = 7, column = 4, columnspan = 1)
+        Re_enterPassword_label.grid( row = 8, column = 3, columnspan = 1)
+        Re_enterPassword_entrybox.grid( row = 8, column = 4, columnspan = 1)
+
+        SUBMIT2.grid( row=8, column = 5, columnspan = 2)
+            
+    else:
+        pass
+#
+#function to register user
+#       THE FUNCTION YOU WROTE
+def register_click():
+        #declaring global variables
+        global firstname
+        global lastname
+        global username_register
+        global emailID_register
+        global phonenumber
+        global DOB
+        global password
+        #firstname
+        if FirstName_entrybox.get() == '':
+                tkinter.messagebox.showerror('ERROR', 'First Name Not Entered')
+        else:
+                firstname = FirstName_entrybox.get()
+        #lastname
+        if LastName_entrybox.get() == '':
+                tkinter.messagebox.showerror('ERROR', 'Last Name Not Entered')
+        else:
+                lastname = LastName_entrybox.get()
+        #Username
+        if UsernameR_entrybox.get() == '':
+                tkinter.messagebox.showerror('ERROR', 'Username Not Entered')
+        else:
+                username_register = UsernameR_entrybox.get()
+        #emailID
+        if EmailID_entrybox.get() == '':
+                tkinter.messagebox.showerror('ERROR', 'EmailID Not Entered')
+        else:
+                emailID_register = EmailID_entrybox.get()
+        #phonenumber
+        if Phonenumber_entrybox.get == '':
+                tkinter.messagebox.showerror('ERROR', 'Phonenumber Not Entered')
+        else:
+                phonenumber = Phonenumber_entrybox.get()
+        #date of birth
+        if DOB_entrybox == '':
+                tkinter.messagebox.showerror('ERROR', 'Date of Birth Not Entered')
+        else:
+                DOB = DOB_entrybox.get()
+        #password credentials
+        if PasswordR_entrybox.get() == '' or Re_enterPassword_entrybox.get() == '':
+                tkinter.messagebox.showerror('ERROR', 'Password Not Entered in both fields')
+        elif Re_enterPassword_entrybox.get() != PasswordR_entrybox.get():
+                tkinter.messagebox.showerror('ERROR', 'Password Not Matching')
+        else:
+                password = Re_enterPassword_entrybox.get()
+        #entering the credentials in the table
+        cursor.execute("CREATE TABLE IF NOT EXISTS student_info(First_Name varchar(200), Last_Name varchar(200), UserName varchar(200), Email_ID varchar(100), PhoneNumber varchar(11), DOB date, PassWord varchar(200))")
+        cursor.execute('INSERT INTO student_info (First_Name, Last_Name, UserName, Email_ID, PhoneNumber, DOB, PassWord) VALUES ("{}","{}","{}","{}","{}","{}","{}")'.format(firstname, lastname, username_register, emailID_register, phonenumber, DOB, password))
+        my.commit()
+        tkinter.messagebox.showinfo('Message', 'Registered')
+        submit()
+
+#signin function
+def signin_click():
+        global username
+        global psswrd
+        cursor.execute('select username from student_info')
+        list_usernames = list(i[0] for i in cursor)
+        #username
+        if UsernameS_entrybox.get() == '':
+                   tkinter.messagebox.showerror("ERROR", "User Name Incorrect")
+        else:
+                for i in list_usernames:
+                        if i == UsernameS_entrybox.get():
+                                username = i
+                                cursor.execute('select PassWord from student_info where UserName="{}"'.format(username))
+                                #password
+                                if Password_entrybox.get() == '':
+                                        tkinter.messagebox.showerror("ERROR", "Password Incorrect")
+                                else:
+                                        for j in cursor:
+                                                if j[0] == Password_entrybox.get():
+                                                        psswrd = j[0]
+                                                        tkinter.messagebox.showinfo('Message', 'Signed In')
+                                                else:
+                                                        tkinter.messagebox.showerror("ERROR", "Password Incorrect")
+
+                else:
+                        tkinter.messagebox.showerror('ERROR', 'Username Not Entered')
+
+def submit():
+    #global count
+    #count=[]
+    window_frame.grid_remove()
+    
+    
+
+#Creation of root window
+root = Tk()
+taskmenu = Menu(root)
+root.geometry('1500x1000')
+root.config(menu=taskmenu)#check
+root.configure( bg ='Black')
+
+#Changing Font
+myFont1 = font.Font( family = 'Constantia Italic', size = 50, weight = 'bold')
+myFont2 = font.Font( family = 'Gadugi', size = 20, weight = 'bold')
+myFont3 = font.Font( family = "Gadugi", size = 15, weight = "bold")
+
+#Top look taskbar
+look = Menu( taskmenu)
+taskmenu.add_cascade( label = 'Elysian - Computer Tests', menu = look)
+
+
+checker = 0
+
+#Heading
+heading = Label( root, text = 'Elysian',  bg = 'Black', fg = 'white')
+heading.grid( row = 1, column = 0, columnspan = 6)
+heading['font'] = myFont1
+
+
+#Frame
+window_frame = LabelFrame( root, text = 'LogIn', padx = 100, pady = 20, bg = 'lightcoral', fg = 'Black', borderwidth = 10)
+window_frame.grid( row = 2, column = 0, columnspan = 6, padx = 25, pady = 0)
+window_frame['font'] = myFont2
+
+# Creation of window frame 3
+
+window_frame3 = LabelFrame( root, text = 'TakeTest', padx = 0, pady = 20, bg = 'lightcoral', fg = 'black', borderwidth = 6)
+window_frame3.grid( row = 1, column = 0, columnspan = 5, padx = 25, pady = 25,ipady=0)
+window_frame3['font'] = myFont3
+RVar1 = IntVar() #Radio button value
+q_i=1
+
+#Creation of window frame 2
+window_frame4 = LabelFrame( root, text = 'MyProfile', padx = 100, pady = 20,bg = 'lightcoral', fg = 'black', borderwidth = 6)
+window_frame4.grid( row = 2, column = 0, columnspan = 8, padx = 100, pady = 25)
+window_frame4['font'] = myFont2
+
+#Creation of window frame 5
+window_frame5 = LabelFrame( root, text = 'Score', padx = 100, pady = 0, bg = 'lightcoral', fg = 'black', borderwidth = 6)
+window_frame5.grid( row = 2, column = 0, columnspan = 15, padx = 300, pady = 0)
+window_frame5['font'] = myFont2
+
+#
+#Creating Two Buttons for Sign In and Register
+#
+#Sign In Button
+button_SignIn = Button( window_frame, text = 'Sign In',  bg = 'Black', fg = 'lightcoral', borderwidth = 5, command = sign_in)
+button_SignIn.grid( row = 1, column = 1, columnspan = 3, padx = 50, pady = 0, ipadx = 100, ipady = 0)
+button_SignIn['font'] = myFont2
+
+#Register Button
+button_Register = Button( window_frame, text = 'Register', bg = 'Black', fg = 'lightcoral', borderwidth = 5, command = button_register)
+button_Register.grid( row = 1, column = 4, columnspan = 3, padx = 50, pady = 0, ipadx = 100, ipady = 0)
+button_Register['font'] = myFont2
+
+#Exit Button
+button_Exit = Button( root, text = 'Exit', command = root.destroy, padx = 50, borderwidth = 10, bg = 'Black', fg = 'lightcoral')
+button_Exit.grid( row = 8, column = 5)
+button_Exit['font'] = myFont2
+
+#Creation of take test button
+button_Test = Button( window_frame3, text = 'Take Tests', fg = 'lightcoral', bg = 'Black', borderwidth = 5,command=test)
+button_Test['font'] = myFont2
+
+#Creation of view score button
+button_Score = Button( window_frame3, text = 'View Score', fg = 'lightcoral', bg = 'Black', borderwidth = 5,command=result)
+button_Score['font'] = myFont2
+
+
+
+signin_clicked = False
+register_clicked = False
+
+#sign_in
+#
+UsernameS_label = Label( window_frame, text = 'Username: ', bg = 'lightcoral', fg='Black')
+UsernameS_entrybox = Entry( window_frame, width = 25)
+
+Password_label = Label( window_frame, text = 'Password: ', bg = 'lightcoral', fg='Black')
+Password_entrybox = Entry( window_frame, width = 25, show = '*')
+
+#BUTTON CREATION
+SUBMIT = Button(window_frame, text = 'SUBMIT' , bg = 'lightcoral', fg='Black', borderwidth = 10, command=submit)
+
+#
+#register
+#
+FirstName_label = Label( window_frame, text="FirstName:", bg = 'lightcoral', fg='Black')
+FirstName_entrybox = Entry( window_frame, width=25, borderwidth = 2)
+
+LastName_label = Label( window_frame, text="LastName:", bg = 'lightcoral', fg='Black')
+LastName_entrybox = Entry( window_frame, width=25)
+
+EmailID_label = Label( window_frame, text="Email:", bg = 'lightcoral', fg='Black')
+EmailID_entrybox = Entry( window_frame, width=25)
+
+Phonenumber_label = Label( window_frame, text="Phone No.:", bg = 'lightcoral', fg='Black')
+Phonenumber_entrybox = Entry( window_frame, width=25)
+
+UsernameR_label = Label( window_frame, text="Username:", bg = 'lightcoral', fg='Black')
+UsernameR_entrybox = Entry( window_frame, width=25)
+
+DOB_label = Label( window_frame, text="DOB (YYYY-MM-DD):", bg = 'lightcoral', fg='Black')
+DOB_entrybox = Entry( window_frame, width=25)
+
+PasswordR_label = Label( window_frame, text="Password:", bg = 'lightcoral', fg='Black')
+PasswordR_entrybox = Entry( window_frame, width=25, show = '*')
+Re_enterPassword_label = Label( window_frame, text = "Re-enter Password:", bg = 'lightcoral', fg='Black')
+Re_enterPassword_entrybox = Entry( window_frame, width=25, show = '*')
+
+#BUTTON CREATION
+SUBMIT2= Button(window_frame, text = 'SUBMIT' , bg = 'lightcoral', fg='Black', borderwidth = 10, command = register_click)
+
+
+
+#FreeSpaces
+label_space1 = Label(window_frame,text = ' ', bg = 'lightcoral')
+label_space2 = Label(window_frame,text = ' ', bg = 'lightcoral')
+label_space3 = Label(window_frame,text = ' ', bg = 'lightcoral')
+label_space4 = Label(window_frame,text = ' ', bg = 'lightcoral')
+label_space5 = Label(window_frame,text = ' ', bg = 'lightcoral')
+
+label_space1['font'] = myFont2
+label_space2['font'] = myFont2
+label_space3['font'] = myFont2
+label_space4['font'] = myFont2
+label_space5['font'] = myFont2
+
+label_space1.grid( row = 2, column = 0)
+label_space2.grid( row = 3, column = 0)
+label_space3.grid( row = 4, column = 0)
+label_space4.grid( row = 5, column = 0)
+label_space5.grid( row = 6, column = 0)
+
+
+
+
+#For the results graph
+n="Student_Score"+"meg"
+cursor.execute("SELECT * FROM {}".format(n))
+a=cursor.fetchall()
+print(a)
+m=[a[0][1],a[0][2],a[0][3],a[0][4]]
+n=["MYSQL Test","Computer \nNetwork Test","Society,Law \nand Ethics Test","Python \nLibraries Test"]
+
+
+#mysql test questions
+cursor.execute("CREATE TABLE IF NOT EXISTS libQ1(Sno int,Question varchar(200),Option1 varchar(100),Option2 varchar(100),Option3 varchar(100),Option4 varchar(100),CorrectOp varchar(100))")
+
+'''cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(1,'1. Key is an ….. in the databasesystem.','a)Attribute','b)Condition ','c)Row','d) Variables','a)Attribute')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(2,'2.Ordered by clause is used to….. the query \nresult.','a)Sort','b)Index ','c)Order','d)None of the above','c)Order')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(3,'3. A…….. is used to identify aparticular record.','a)Index','b)Tuple','c)Key','d)All of them','c)Key')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(4,'A row in a relation is called.','a)Data','b)Domain','c)Tuple','d)None of the above','c)Tuple')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(5,'5 The duplication of data is known as..','a)Data redundancy ','b)Attribute','c)Domain','d)None of the above','a)Data redundancy')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(6,'6.Set of possible values that an attribute \ncan have……','a)Tuple','b)Value','c)Domain','d)None of the above','c)None of the above')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(7,'7.A…….. is an integrated collection of related files.','a)Database','b)Software','c)Records','d)All of the above','b)Software')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(8,'8.The number of tuples in a relation is called.','a)Degree','b)Attribute','c)Cardinality','d)none of the above','c)Cardinality')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(9,'9.The following are components of a database \nexcept …….','a)User data','b)Reports','c)Metadata ','d)Indexes','a)User data')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(10,'10.Which of the following is NOT a type \nof SQL constraint?','a)PRIMARY KEY','b)FOREIGN KEY','c)ALTERNATE KEY ','d)UNIQUE','c)ALTERNATE KEY')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(11,'11.Which of the following is a database\n element?','a)Data ','b)Constraints and Schema','c)Relationships','d)All of the above','d)All of the above')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(12,'12. Which of the following is not a Data\n Manipulation Language Statement?','a)COMMIT','b)DELETE','c)UPDATE','d)INSERT','a)COMMIT')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(13,'13.Whats the full form of SQL?','a)Simple Query Language','b)Structured Quarter Language','c)Structured Query Language','d)None of the above','c)Structured Query language')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(14,'14.Whats the full form of DDL?','a)Data Definition Language','b)Data Dictionary Language','c)Data Description Language','d)None of the above','c)Data Description Language')")
+cursor.execute("INSERT INTO libQ1(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(15,'15.Whats the full form of DML?','a)Data Manipulation Language','b)Data Multiple Language','c)Data Maintained Language','d)None of the above','a)Data Manipulation Language')")
+'''
+
+#Network test
+cursor.execute("CREATE TABLE IF NOT EXISTS libQ2(Sno int,Question varchar(200),Option1 varchar(100),Option2 varchar(100),Option3 varchar(100),Option4 varchar(100),CorrectOp varchar(100))")
+
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(1,'1.Which of the following sorting algorithms\n divide-and-conquer type?','a)Bubble sort','b)Insertion sort ','c)Quicksort','d)All of the above','c)Quicksort')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(2,'2.Which of the following data structure is\n a linear data structure?','a)Trees','b)Graphs','c)Arrays','d)None of the above','c)Arrays')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(3,'3.Which data structure allows deleting data\n elements from front and inserting at the rear?','a)Stacks','b)Queues','c)Dequeues','d)Binary search tree','b)Queues')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(4,'4.The operation of processing each element\n in the list is known as','a)Sorting','b)Merging','c)Inserting','d)Traversal','d)Traversal')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(5,'5.Disk piled up one above the other represent\n a','a)Stacks','b)Queues','c)Linked list','d)Array','a)Stacks')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(6,'6.Which of the following data structures \nare indexed structures?','a)Linear arrays','b)Linked list','c)Queue','d)Stack','b)Linked list')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(7,'7.FIFO means','a)First In First Out','b)Fast In Fast Out','c)Fast In First Out','d)First In Fast Out','a)First In First Out')")               
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(8,'8.If a user tries to remove an element \nfrom empty queue, it is called','a)underflow','b)Empty collection','c)Overflow','d)Garbage Collection','a)underflow')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(9,'9.which of these  components is internal \nto a computer and is required to connect the computer to a network','a)Wireless Access Point','b)Network Interface Card','c)Switch','d)Hub','b)Network Interface Card')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(10,'10.Which of this is not a type of cloud','a)Public','b)Private','c)Protected','d)Hybrid','c)Protected')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(11,'11.What is a stand alone computer','a)A computer that is not connected to a network ','b)A computer that is being used as a server','c)A computer that doesn’t have any peripherals connected to it','d)A computer that is used by only one person','a)A computer that is not connected to a network ')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(12,'12.Two devices are in network if','a)A process in one device is able to exchange \ninformation with a process in another device','b)a process is running on both devices','c)the processes running on different \ndevices are of same type','d)none of the mentioned','a)A process in one device is able to exchange \ninformation with a process in another device')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(13,'13.Central computer which is powerful than other computers in the network is called as','a)Client','b)Server','c)Hub','d)Switch','b)Server')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(14,'14. A firewall is','a)An established network\n performance reference point','b)A virus that infects Macros','c)Software or hardware used to secure \nor safeguard a private network from a public network','d)A predefined encryption key used to \nencrypt and decrypt data transmission','c)Software or hardware used to secure \nor safeguard a private network from a public network')")
+cursor.execute("INSERT INTO libQ2(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(15,'15.If value of checksum is 0, then message is','a)Accepted','b)Rejected','c)Sent back','d)Resend','a)Accepted')")
+
+#Society test
+cursor.execute("CREATE TABLE IF NOT EXISTS libQ3(Sno int,Question varchar(200),Option1 varchar(100),Option2 varchar(100),Option3 varchar(100),Option4 varchar(100),CorrectOp varchar(100))")
+
+'''cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(1,'1. A genetic term that is concerned to the legal \n and regulatory aspects of Internet and computer technology','a)Copyright law ','b)Cyber law ','c)Computer Crime','d) None of the above','b)Cyber law')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(2,'2. \"The Electronic Transaction and Digital Signature\n Act-Ordinance\" is Known as','a)Intellectual Property Law','b)Telecommunication Law ','c)Cyber Law','d) Data Protection Law','c)Cyber Law')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(3,'3. A criminal activity within the information technology\n infrastructure','a)Digital crime','b)Intellectual property','c)Cybercrime','d)All of them','c)Cyber crime')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(4,'4._______ is the normal Principal that regulates \nthe use of computers','a)Cyber Law','b)Cyber act','c)Computer ethics','d)All of them','b)Computer ethics')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(5,'5.The method of making the data or message unreadable\n by unauthorized people','a)Digital signature ','b)Decryption','c)Encryption','d)All of them','c)Encryption')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(6,'6.Cyber law of Nepal commonly known as the \nElectronic Transaction and Digital Signature Act Ordinance \nwas enacted in Nepal in____','a)2061 BS ','b)2062 BS','c)2063 BS','d)2064 BS','a)2061 BS')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(7,'7.When did cyber law introduced in Nepal?','a)2002 A.D.','b)2003 A.D.' ,'c)2004 A.D.','d)2005 A.D.','c)2004 A.D.')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(8,'8.Premeditated, usually politically-motivated \nviolence committed against civilians through the use of, \nor with the help of, computer technology','a)Cyber stalking','b)Cyber laundering','c)Cyber theft','d)Cyber terrorism','d)Cyber terrorism')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(9,'9.The act of attempting to acquire sensitive \ninformation like usernames, passwords and credit card details\n by disguising as a trust worthy source','a)Hacking','b)Phishing','c)Computer Virus ','d)Cyber stalking','b)Phishing')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(10,'10.Electronic transfer of illegally-obtained \n monies with the goal of hiding its source and possibly its \ndestination','a)Cyber stalking','b)Cyber laundering','c)Cyber theft ','d)Cyber terrorism','b)Cyber laundering')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(11,'11.Which of the following is not computer crime?','a)Plagiarism ','b)Password guessing','c)Internet','d)virus transferring','c)Internet')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(12,'12.Which of the following is included in cyber law?','a)Trademark right','b)Copyright','c)Data privacy','d)All of the above','d)All of the above')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(13,'13.Which of the following is not computer ethics?','a)Not to steal data','b)Not to bear false message','c)Not to use Internet','d)Not to harm the society','c)Not to use Internet')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(14,'14.The term ‘cyberspace’ was used in','a)1984','b)1884','c)1985','d)1885','a)1984')")
+cursor.execute("INSERT INTO libQ3(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(15,'15. The Process of ensuring the preservation, \nintegrity and reliability of data is Known as','a)Intellectual Property Law','b)Data Protection and Privacy law','c)Cyber Law','d)Telecommunication Law','b)Data Protection and Privacy law')")
+'''
+#Python libraries test
+cursor.execute("CREATE TABLE IF NOT EXISTS libQ4(Sno int,Question varchar(200),Option1 varchar(100),Option2 varchar(100),Option3 varchar(100),Option4 varchar(100),CorrectOp varchar(100))")
+
+'''cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) VALUES (1,'1. A stack is a ______ Data structure.','a)Dynamic','b)Linear','c)Non-Dynamic','d)None of the above','b)Linear')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) VALUES (2,'2. What is called when a function is \ndefined inside a class?','a)Class','b)Function','c)Method','d)Module','c)Method')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) VALUES (3,'3. If return statement is not used \ninside the function, the function will return:','a)None','b)0','c)Null','d)Arbitrary Value','a)None')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) VALUES (4,'4. Which of the following would give \nan error?','a)list1=[]','b)list1=[]*3','c)list1=[2,8,7]','d)None of the above','d)None of the above')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) VALUES (5,'5. Which of the following is True \nregarding lists in Python?','a)Lists are immutable.','b)Size of the lists must be specified before its initialization','c)Elements of lists are stored in contagious memory location.','d) size(list1) command is used to find the size of lists.','c)Elements of lists are stored in contagious memory location.')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) VALUES (6,'6. Which is a python package used for \n2D graphics?','a)Matplotlib','b)Numpy','c)Pillow','d)Theano','a)Matplotlib')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values (7,'7.Which is a python package used for \n2D graphics?','a)matplotlib.pyplot','b)matplotlib.pip','c)matplotlib.numpy','d)matplotlib.plt','a)matplotlib.pyplot')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values (8,'8.The plot method on Series and DataFrame \nis just a simple wrapper around','a)gplt.plot()','b)plt.plot()','c)plt.plotgraph()','d)none of the mentioned','b)plt.plot()')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values (9,'9.Point out the correct combination with \nregards to kind keyword for graph plotting','a)‘hist’ for histogram','b)‘box’ for boxplot','c)‘area’ for area plots','d) all of the mentioned','d) all of the mentioned')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(10,'10.An independent triple quoted string \ngiven inside a module, containing documentation related information is a','a)Documentation string','b)Docstring ','c)Dstring','d)Stringdoc','b)Docstring ')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(11,'11.Which of the following random module \nfunctions generates a floating point number','a)random()','b)randint()','c)uniform()','d)all of these','a)random()')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(12,'12.A python module has _____ extension','a).mod','b).imp','c).py','d).mpy','c).py')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(13,'13.What file must be a part of a folder to\n be used as a python package','a)package.py','b)_init_.py','c)_package_.py','d)_module.py_','b)_init_.py')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(14,'14.The collection of modules and packages \nthat together cater to  specific type of application or requirements is called','a)module','b)library','c)classes','d)documentation','b)library')")
+cursor.execute("INSERT INTO libQ4(Sno,Question,Option1,Option2,Option3,Option4,CorrectOp) Values(15,'15.A .py file containing constants/variables,\n classes, functions etc related to a particular task and can be used in other programs is called','a)module','b)library','c)classes','d)documentation','a)module')")
+'''               
+
+
+
+root.mainloop()
+my.commit()
+my.close()
